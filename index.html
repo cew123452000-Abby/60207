@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI × 環境教育｜五關資源回收大冒險</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans TC & Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti CDN for Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            display: ['"Fredoka"', '"Noto Sans TC"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f2fbf5',
+              100: '#e1f7e8',
+              200: '#c5eed4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+            },
+            earth: {
+              wood: '#d97706',
+              soil: '#78350f',
+              sky: '#0284c7',
+              leaf: '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f7faf5;
+      background-image: radial-gradient(#dcfce7 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    .bounce-hover:hover {
+      transform: translateY(-4px);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 4px;
+    }
+    @keyframes pulseSoft {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-pulse-soft {
+      animation: pulseSoft 2s infinite ease-in-out;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+    }
+    .grab-cursor {
+      cursor: grab;
+    }
+    .grab-cursor:active {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col font-sans select-none">
+
+  <header class="bg-white/90 border-b border-emerald-100 sticky top-0 z-40 backdrop-blur-md shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Badge -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-md shadow-emerald-200">
+          🌱
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 tracking-wider">AI × 環境教育</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">遊戲化學習</span>
+          </div>
+          <h1 class="text-lg md:text-xl font-black text-slate-800 tracking-tight">綠色小尖兵：五關資源回收大冒險</h1>
+        </div>
+      </div>
+
+      <!-- Quick Actions (Audio & Level jumping) -->
+      <div class="flex items-center space-x-2">
+        <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition flex items-center text-slate-600 text-sm font-semibold" title="音效開關">
+          <span id="soundIcon" class="mr-1">🔊</span> <span id="soundText" class="hidden sm:inline">音效開</span>
+        </button>
+        <button onclick="resetAllProgress()" class="p-2.5 rounded-xl border border-slate-200 hover:bg-rose-50 hover:text-rose-600 transition text-slate-500 text-sm font-semibold" title="重新開始">
+          🔄 <span class="hidden sm:inline">重置冒險</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stepper Tracker -->
+    <div class="max-w-5xl mx-auto px-4 py-2 border-t border-slate-100 overflow-x-auto">
+      <div class="flex items-center justify-between min-w-[560px] gap-2">
+        <button onclick="switchLevel(1)" id="step-btn-1" class="step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-emerald-600 text-white shadow-sm">
+          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span>
+          <span>新手村</span>
+        </button>
+        <div class="w-4 h-0.5 bg-slate-200"></div>
+        <button onclick="switchLevel(2)" id="step-btn-2" class="step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">2</span>
+          <span>分類高手</span>
+        </button>
+        <div class="w-4 h-0.5 bg-slate-200"></div>
+        <button onclick="switchLevel(3)" id="step-btn-3" class="step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">3</span>
+          <span>回收急診室</span>
+        </button>
+        <div class="w-4 h-0.5 bg-slate-200"></div>
+        <button onclick="switchLevel(4)" id="step-btn-4" class="step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">4</span>
+          <span>廢物變寶物</span>
+        </button>
+        <div class="w-4 h-0.5 bg-slate-200"></div>
+        <button onclick="switchLevel(5)" id="step-btn-5" class="step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px]">5</span>
+          <span>地球倡議者</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+    <!-- LEVEL 1: 回收新手村 -->
+    <section id="level-1" class="level-section">
+      <div class="glass-card border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-900/5">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-6">
+          <div>
+            <div class="inline-block bg-emerald-100 text-emerald-800 font-bold text-xs px-2.5 py-1 rounded-full mb-1">
+              第一關 ｜ 回收新手村
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">建立資源回收基本概念</h2>
+            <p class="text-sm text-slate-500 mt-1">任務目標：了解「為什麼需要資源回收」與「回收可以減少什麼問題」</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-bold text-emerald-600 block">通關進度</span>
+            <span id="l1-progress-text" class="text-lg font-black text-slate-700">0 / 4</span>
+          </div>
+        </div>
+
+        <!-- Question Card Box -->
+        <div id="l1-card" class="bg-gradient-to-br from-white to-emerald-50/50 border-2 border-emerald-200/80 rounded-2xl p-6 sm:p-8 text-center shadow-md relative overflow-hidden transition-all duration-300">
+          <div class="absolute -right-8 -bottom-8 w-28 h-28 bg-emerald-200/30 rounded-full blur-xl pointer-events-none"></div>
+          
+          <div class="text-xs font-bold tracking-widest text-emerald-700 uppercase mb-2">挑戰題目：垃圾要丟去哪裡？</div>
+          <div id="l1-icon" class="text-6xl mb-3 animate-pulse-soft">🥤</div>
+          <h3 id="l1-title" class="text-xl sm:text-2xl font-black text-slate-800 mb-2">喝完的可樂鋁罐</h3>
+          <p id="l1-desc" class="text-slate-600 text-sm max-w-md mx-auto mb-6">請判斷：它是可以循環再生的「資源」，還是會送去焚化掩埋的「一般垃圾」？</p>
+
+          <!-- Choices -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+            <button onclick="handleL1Answer(true)" class="group flex items-center justify-center space-x-3 bg-white border-2 border-emerald-400 hover:bg-emerald-500 hover:text-white p-4 rounded-2xl font-bold text-slate-700 transition shadow-sm hover:shadow-lg">
+              <span class="text-2xl group-hover:scale-125 transition">♻️</span>
+              <div class="text-left">
+                <div class="text-base font-black">這是資源回收！</div>
+                <div class="text-xs text-slate-400 group-hover:text-emerald-100">能再造成新產品</div>
+              </div>
+            </button>
+            <button onclick="handleL1Answer(false)" class="group flex items-center justify-center space-x-3 bg-white border-2 border-slate-300 hover:bg-slate-700 hover:text-white p-4 rounded-2xl font-bold text-slate-700 transition shadow-sm hover:shadow-lg">
+              <span class="text-2xl group-hover:scale-125 transition">🗑️</span>
+              <div class="text-left">
+                <div class="text-base font-black">這是一般垃圾！</div>
+                <div class="text-xs text-slate-400 group-hover:text-slate-200">送焚化或掩埋處理</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback info modal/box inside -->
+        <div id="l1-feedback" class="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 hidden transition">
+          <div class="flex items-start space-x-3">
+            <span id="l1-fb-icon" class="text-2xl">💡</span>
+            <div>
+              <h4 id="l1-fb-title" class="font-black text-sm">知識小百科</h4>
+              <p id="l1-fb-text" class="text-xs sm:text-sm mt-1 text-slate-700"></p>
+            </div>
+          </div>
+          <div class="mt-3 text-right">
+            <button onclick="nextL1Question()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition">
+              下一題 ➜
+            </button>
+          </div>
+        </div>
+
+        <!-- Level Complete View -->
+        <div id="l1-complete" class="hidden mt-6 text-center bg-emerald-50 border-2 border-emerald-300 p-6 rounded-2xl">
+          <div class="text-5xl mb-2">🎉</div>
+          <h3 class="text-xl font-black text-emerald-800">恭喜通過第一關：回收新手村！</h3>
+          <p class="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+            你已經了解：做好資源回收可以<strong>減少焚化爐負擔</strong>、<strong>降低環境污染</strong>，讓珍貴的地球原料不斷循環再生！
+          </p>
+          <button onclick="switchLevel(2)" class="mt-4 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg transition">
+            前往第二關：分類高手 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="level-2" class="level-section hidden">
+      <div class="glass-card border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-900/5">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-4">
+          <div>
+            <div class="inline-block bg-blue-100 text-blue-800 font-bold text-xs px-2.5 py-1 rounded-full mb-1">
+              第二關 ｜ 分類高手
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">能正確判斷不同回收物</h2>
+            <p class="text-sm text-slate-500 mt-1">任務目標：將 6 種生活廢棄物正確投進對應的回收箱（拖曳或點選）</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-bold text-blue-600 block">已分類完成</span>
+            <span id="l2-count-badge" class="text-lg font-black text-slate-700">0 / 6</span>
+          </div>
+        </div>
+
+        <!-- Tip Bar -->
+        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3 text-xs sm:text-sm text-blue-900 flex items-center space-x-2 mb-6">
+          <span class="text-base">💡</span>
+          <span>操作方式：<strong>點擊物品 ➜ 點擊回收箱</strong>，或是<strong>直接將物品拖曳至回收箱</strong>！</span>
+        </div>
+
+        <!-- Draggable items tray -->
+        <div class="mb-6">
+          <div class="text-xs font-bold text-slate-500 mb-2 flex justify-between items-center">
+            <span>待分類生活物品（共 6 件）：</span>
+            <span id="l2-selected-tip" class="text-amber-600 font-medium hidden">👉 請點擊下方任一個回收箱放置</span>
+          </div>
+          <div id="l2-items-pool" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 min-h-[90px] p-3 bg-slate-100/70 rounded-2xl border-2 border-dashed border-slate-300 items-center">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- 6 Recycling Bins -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4" id="l2-bins-container">
+          <!-- 紙類 -->
+          <div data-category="paper" onclick="handleBinClick('paper')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'paper')" class="bin-box group relative p-4 rounded-2xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100/70 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">📦</div>
+              <div class="font-black text-amber-900 text-sm md:text-base">紙類</div>
+              <div class="text-[11px] text-amber-700 mt-0.5">如：紙箱、書籍、紙袋</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-amber-800 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+
+          <!-- 塑膠 -->
+          <div data-category="plastic" onclick="handleBinClick('plastic')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'plastic')" class="bin-box group relative p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100/70 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">🧴</div>
+              <div class="font-black text-emerald-900 text-sm md:text-base">塑膠</div>
+              <div class="text-[11px] text-emerald-700 mt-0.5">如：寶特瓶、塑膠瓶罐</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-emerald-800 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+
+          <!-- 金屬 -->
+          <div data-category="metal" onclick="handleBinClick('metal')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'metal')" class="bin-box group relative p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">🔩</div>
+              <div class="font-black text-slate-800 text-sm md:text-base">金屬</div>
+              <div class="text-[11px] text-slate-600 mt-0.5">如：鐵螺絲、鋁罐、五金</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-slate-700 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+
+          <!-- 玻璃 -->
+          <div data-category="glass" onclick="handleBinClick('glass')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'glass')" class="bin-box group relative p-4 rounded-2xl border-2 border-cyan-300 bg-cyan-50 hover:bg-cyan-100/70 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">🍶</div>
+              <div class="font-black text-cyan-900 text-sm md:text-base">玻璃</div>
+              <div class="text-[11px] text-cyan-700 mt-0.5">如：玻璃瓶、調味醬油罐</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-cyan-800 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+
+          <!-- 廢電池 -->
+          <div data-category="battery" onclick="handleBinClick('battery')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'battery')" class="bin-box group relative p-4 rounded-2xl border-2 border-yellow-400 bg-yellow-50 hover:bg-yellow-100/70 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">🔋</div>
+              <div class="font-black text-yellow-900 text-sm md:text-base">廢電池</div>
+              <div class="text-[11px] text-yellow-700 mt-0.5">如：乾電池、鈕扣電池</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-yellow-800 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+
+          <!-- 電子產品 -->
+          <div data-category="electronic" onclick="handleBinClick('electronic')" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'electronic')" class="bin-box group relative p-4 rounded-2xl border-2 border-purple-300 bg-purple-50 hover:bg-purple-100/70 transition cursor-pointer text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div class="text-3xl mb-1 group-hover:scale-110 transition">📱</div>
+              <div class="font-black text-purple-900 text-sm md:text-base">電子產品</div>
+              <div class="text-[11px] text-purple-700 mt-0.5">如：廢手機、筆電平板</div>
+            </div>
+            <div class="bin-count text-[11px] font-bold text-purple-800 bg-white/80 py-0.5 px-2 rounded-full inline-block mt-2 self-center">已投入: 0</div>
+          </div>
+        </div>
+
+        <!-- Level 2 Success message -->
+        <div id="l2-complete" class="hidden mt-6 text-center bg-blue-50 border-2 border-blue-300 p-6 rounded-2xl">
+          <div class="text-5xl mb-2">🌟</div>
+          <h3 class="text-xl font-black text-blue-900">太棒了！分類高手闖關成功！</h3>
+          <p class="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+            你成功將<strong>箱子、玻璃、寶特瓶、電池、螺絲、手機</strong>全部正確歸類！電池與手機內含重金屬，單獨專門回收才能避免土壤重金屬污染唷！
+          </p>
+          <button onclick="switchLevel(3)" class="mt-4 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg transition">
+            前往第三關：回收急診室 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="level-3" class="level-section hidden">
+      <div class="glass-card border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-900/5">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-4">
+          <div>
+            <div class="inline-block bg-amber-100 text-amber-800 font-bold text-xs px-2.5 py-1 rounded-full mb-1">
+              第三關 ｜ 回收急診室
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">知道回收前還需要正確處理</h2>
+            <p class="text-sm text-slate-500 mt-1">任務目標：學會黃金四步驟「倒乾淨 ➔ 洗乾淨 ➔ 瀝乾 ➔ 正確分類」</p>
+          </div>
+        </div>
+
+        <!-- Case Story Card -->
+        <div class="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 sm:p-5 mb-6">
+          <div class="flex items-start space-x-3">
+            <span class="text-3xl">🧋</span>
+            <div>
+              <h3 class="font-black text-amber-900 text-base">學習單情境診斷：</h3>
+              <p class="text-sm text-amber-950 mt-1 leading-relaxed">
+                「小明喝完珍珠奶茶，把還有<strong>冰塊、吸管和珍珠</strong>的飲料杯，直接整杯丟進塑膠回收桶！」<br>
+                <span class="font-bold text-rose-700">🚨 你覺得哪裡有問題？</span>
+                珍珠會發臭孳生蚊蠅，殘留奶水會發酸污染其他乾淨塑膠，而且吸管不是可回收塑膠！
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Step Interactive Stage -->
+        <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 mb-6">
+          <!-- Step indicator -->
+          <div class="flex justify-between items-center mb-6 max-w-lg mx-auto text-xs font-bold">
+            <div id="step-badge-1" class="flex flex-col items-center text-emerald-600 font-black">
+              <span class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-1 shadow">1</span>
+              <span>1. 倒乾淨</span>
+            </div>
+            <div class="w-8 h-0.5 bg-slate-300"></div>
+            <div id="step-badge-2" class="flex flex-col items-center text-slate-400">
+              <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mb-1">2</span>
+              <span>2. 洗乾淨</span>
+            </div>
+            <div class="w-8 h-0.5 bg-slate-300"></div>
+            <div id="step-badge-3" class="flex flex-col items-center text-slate-400">
+              <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mb-1">3</span>
+              <span>3. 瀝乾</span>
+            </div>
+            <div class="w-8 h-0.5 bg-slate-300"></div>
+            <div id="step-badge-4" class="flex flex-col items-center text-slate-400">
+              <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mb-1">4</span>
+              <span>4. 正確分類</span>
+            </div>
+          </div>
+
+          <!-- Interactive Workspace -->
+          <div id="boba-step-content" class="min-h-[220px] flex flex-col items-center justify-center text-center">
+            <!-- Dynamic step contents rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Level 3 Success banner -->
+        <div id="l3-complete" class="hidden text-center bg-emerald-50 border-2 border-emerald-300 p-6 rounded-2xl">
+          <div class="text-5xl mb-2">🏆</div>
+          <h3 class="text-xl font-black text-emerald-900">恭喜成為回收小醫師！</h3>
+          <p class="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+            記住黃金四口訣：<strong>「倒、洗、瀝、分」</strong>！這樣送去回收場的塑膠杯才能真正被再生利用，清潔隊員也不會被酸臭臭到囉！
+          </p>
+          <button onclick="switchLevel(4)" class="mt-4 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg transition">
+            前往第四關：廢物變寶物 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="level-4" class="level-section hidden">
+      <div class="glass-card border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-900/5">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-4">
+          <div>
+            <div class="inline-block bg-teal-100 text-teal-800 font-bold text-xs px-2.5 py-1 rounded-full mb-1">
+              第四關 ｜ 廢物變寶物
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">從「回收」進一步思考「再利用」</h2>
+            <p class="text-sm text-slate-500 mt-1">任務目標：選定生活廢棄物【寶特瓶】，探索其三種神奇變身新用途！</p>
+          </div>
+        </div>
+
+        <!-- Item Intro -->
+        <div class="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 mb-6">
+          <div class="text-5xl bg-white p-3 rounded-2xl shadow-sm">🧴</div>
+          <div class="text-left text-sm text-teal-950">
+            <div><span class="font-bold text-teal-800">選定的生活廢棄物：</span><strong>寶特瓶</strong></div>
+            <div><span class="font-bold text-teal-800">原本的用途：</span>裝各種水、飲料</div>
+            <div class="text-xs text-slate-500 mt-1">如果不立刻丟掉進焚化爐，透過 DIY 巧思與科技，它可以重生變成什麼呢？</div>
+          </div>
+        </div>
+
+        <!-- 3 Handcrafted Transformation Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <!-- 用途一：盆器 -->
+          <div id="diy-card-1" class="border-2 border-emerald-200 rounded-2xl p-4 bg-white flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">新用途一</span>
+                <span class="text-2xl">🌱</span>
+              </div>
+              <h4 class="font-black text-slate-800 text-base">綠意盆器（小盆栽）</h4>
+              <p class="text-xs text-slate-500 mt-1">把寶特瓶剪成一半，底部打透水小孔，填入土壤後就能播種種植薄荷或多肉植物！</p>
+            </div>
+            <button onclick="craftItem(1)" id="craft-btn-1" class="mt-4 w-full py-2 bg-emerald-100 hover:bg-emerald-600 hover:text-white text-emerald-800 text-xs font-bold rounded-xl transition">
+              ✨ 動手變身盆器
+            </button>
+          </div>
+
+          <!-- 用途二：澆水工具 -->
+          <div id="diy-card-2" class="border-2 border-sky-200 rounded-2xl p-4 bg-white flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">新用途二</span>
+                <span class="text-2xl">🚿</span>
+              </div>
+              <h4 class="font-black text-slate-800 text-base">澆水神器（噴灑壺）</h4>
+              <p class="text-xs text-slate-500 mt-1">在瓶蓋戳出 3~5 個細小水孔，裝滿水後輕壓瓶身，立即成為溫和出水的園藝澆水器！</p>
+            </div>
+            <button onclick="craftItem(2)" id="craft-btn-2" class="mt-4 w-full py-2 bg-sky-100 hover:bg-sky-600 hover:text-white text-sky-800 text-xs font-bold rounded-xl transition">
+              💧 動手變身澆水器
+            </button>
+          </div>
+
+          <!-- 用途三：做衣服 -->
+          <div id="diy-card-3" class="border-2 border-purple-200 rounded-2xl p-4 bg-white flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">新用途三</span>
+                <span class="text-2xl">👕</span>
+              </div>
+              <h4 class="font-black text-slate-800 text-base">環保排汗衣（再生纖維）</h4>
+              <p class="text-xs text-slate-500 mt-1">工業科技！將寶特瓶粉碎清洗、熔融抽絲，大約 14 支寶特瓶就能製成一件環保球衣！</p>
+            </div>
+            <button onclick="craftItem(3)" id="craft-btn-3" class="mt-4 w-full py-2 bg-purple-100 hover:bg-purple-600 hover:text-white text-purple-800 text-xs font-bold rounded-xl transition">
+              🧵 送去抽絲做衣服
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Idea Input Box -->
+        <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 mb-6">
+          <label class="block text-xs font-black text-amber-900 mb-1">💡 換你想想看：你還能發明寶特瓶的什麼新用途？（玩家自由創意）</label>
+          <div class="flex gap-2">
+            <input type="text" id="diy-custom-input" placeholder="例如：做成鉛筆盒、存錢筒、吊掛鳥食器..." class="flex-1 text-sm px-3.5 py-2 rounded-xl border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            <button onclick="saveCustomDiyIdea()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition">
+              記錄點子
+            </button>
+          </div>
+          <div id="custom-idea-tag" class="mt-2 text-xs text-emerald-700 font-semibold hidden"></div>
+        </div>
+
+        <!-- Level 4 Complete -->
+        <div id="l4-complete" class="hidden text-center bg-teal-50 border-2 border-teal-300 p-6 rounded-2xl">
+          <div class="text-5xl mb-2">🎨</div>
+          <h3 class="text-xl font-black text-teal-900">太有創意了！廢物變寶物挑戰通過！</h3>
+          <p class="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+            回收只是守護的第一步，思考<strong>循環經濟</strong>與<strong>重複使用</strong>，能讓資源發揮 200% 的最大價值！
+          </p>
+          <button onclick="switchLevel(5)" class="mt-4 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-xl shadow-lg transition">
+            前往最終關：地球倡議者 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="level-5" class="level-section hidden">
+      <div class="glass-card border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-900/5">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-4 mb-4">
+          <div>
+            <div class="inline-block bg-emerald-100 text-emerald-800 font-bold text-xs px-2.5 py-1 rounded-full mb-1">
+              第五關 ｜ 地球倡議者
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">理解回收的價值，並願意採取行動</h2>
+            <p class="text-sm text-slate-500 mt-1">任務目標：簽署行動宣言，生成個人專屬「地球守護者承諾卡」！</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <!-- Input Form Section -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">倡議小尖兵大名 / 暱稱：</label>
+              <input type="text" id="advocate-name" value="綠色小隊長" oninput="updateCertificate()" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+            </div>
+
+            <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200">
+              <span class="text-xs font-black text-emerald-800 block mb-1">學習單核心信仰：</span>
+              <p class="text-xs sm:text-sm text-emerald-900 italic font-medium leading-relaxed">
+                「我認為大家應該做好資源回收，因為<strong>地球只有一個，大家要一起好好愛護</strong>。」
+              </p>
+            </div>
+
+            <div>
+              <span class="block text-xs font-bold text-slate-700 mb-2">我承諾實踐的環保行動（勾選 3 件或以上）：</span>
+              <div class="space-y-2 text-xs sm:text-sm">
+                <label class="flex items-center space-x-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50 transition">
+                  <input type="checkbox" checked onchange="updateCertificate()" class="action-check accent-emerald-600 rounded">
+                  <span>喝完手搖杯落實「倒、洗、瀝、分」</span>
+                </label>
+                <label class="flex items-center space-x-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50 transition">
+                  <input type="checkbox" checked onchange="updateCertificate()" class="action-check accent-emerald-600 rounded">
+                  <span>出門自備環保水壺與餐具，減少一次性垃圾</span>
+                </label>
+                <label class="flex items-center space-x-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50 transition">
+                  <input type="checkbox" checked onchange="updateCertificate()" class="action-check accent-emerald-600 rounded">
+                  <span>廢電池與舊手機交給專用回收點，絕不亂丟</span>
+                </label>
+                <label class="flex items-center space-x-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50 transition">
+                  <input type="checkbox" onchange="updateCertificate()" class="action-check accent-emerald-600 rounded">
+                  <span>動動腦筋，把用不到的寶特瓶改造成花盆或水壺</span>
+                </label>
+              </div>
+            </div>
+
+            <button onclick="finalizeAdvocacy()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+              <span>✍️ 簽署並公開我的承諾宣言！</span>
+            </button>
+          </div>
+
+          <!-- Certificate Preview Card -->
+          <div class="flex flex-col items-center">
+            <div id="certificate-card" class="w-full bg-gradient-to-b from-white via-emerald-50/40 to-emerald-100/30 border-4 border-emerald-400 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+              <div class="absolute -top-12 -right-12 w-36 h-36 bg-emerald-200/50 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div class="text-center pb-3 border-b border-emerald-200">
+                <div class="text-3xl mb-1">🌍</div>
+                <h3 class="text-base sm:text-lg font-black tracking-wide text-emerald-900">地球守護者 ｜ 榮譽行動證書</h3>
+                <span class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">Earth Advocate Certificate</span>
+              </div>
+
+              <div class="my-4 text-center">
+                <div class="text-xs text-slate-500 mb-1">守護小尖兵</div>
+                <div id="cert-name" class="text-xl sm:text-2xl font-black text-emerald-700 underline decoration-emerald-300 decoration-wavy">綠色小隊長</div>
+              </div>
+
+              <div class="bg-white/80 rounded-2xl p-3 border border-emerald-200/60 shadow-inner mb-4 text-xs text-slate-700 space-y-2">
+                <p class="leading-relaxed">
+                  「我認為大家應該做好資源回收，因為<strong class="text-emerald-800">地球只有一個，大家要一起好好愛護</strong>。」
+                </p>
+                <div class="border-t border-slate-200 pt-2 font-bold text-emerald-800">
+                  <span class="block text-[11px] text-slate-400 font-normal">承諾行動：</span>
+                  <ul id="cert-actions-list" class="list-disc list-inside space-y-0.5 text-[11px]">
+                    <li>落實喝完飲料「倒、洗、瀝、分」</li>
+                    <li>自備環保杯與購物袋</li>
+                    <li>專項回收廢電池與手機</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Slogan Banner based on prompt handwritten notes -->
+              <div class="bg-amber-100/80 border border-amber-300 rounded-xl p-2.5 text-center">
+                <span class="text-[10px] font-bold text-amber-800 block">🔥 倡議標語</span>
+                <p class="text-xs sm:text-sm font-black text-amber-900 mt-0.5">
+                  「好好愛護地球，一起為地球盡一份心力，行動力！」
+                </p>
+              </div>
+
+              <div class="mt-4 flex justify-between items-center text-[10px] text-slate-400 pt-2 border-t border-emerald-100">
+                <span>認證機構：環境教育互動學習網</span>
+                <span id="cert-date">2026 / 10</span>
+              </div>
+            </div>
+
+            <!-- Action buttons below card -->
+            <div class="mt-4 flex gap-3 w-full">
+              <button onclick="shareOrCopy()" class="flex-1 py-2 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition shadow-sm">
+                📋 複製宣言卡內容
+              </button>
+              <button onclick="celebrateAgain()" class="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition shadow-sm">
+                🎉 再放一次彩帶
+              </button>
+            </div>
+            <div id="copy-success-tip" class="text-xs text-emerald-600 mt-2 font-bold hidden">
+              ✅ 宣言卡文字已成功複製至剪貼簿！
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="mt-auto py-4 text-center text-xs text-slate-400 border-t border-slate-100">
+    <p>AI × 環境教育 × 遊戲化學習 ｜ 依據學習單設計製作 ｜ 一起為地球盡一份心力！</p>
+  </footer>
+
+  <!-- Notification Toast Modal -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 pointer-events-none">
+    <span id="toast-icon" class="text-xl">🔔</span>
+    <span id="toast-msg" class="text-sm font-bold">通知訊息</span>
+  </div>
+
+  <script>
+    // --- Web Audio API sound generator (No external audio files needed) ---
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function soundSuccess() {
+      playTone(523.25, 'triangle', 0.12, 0.15); // C5
+      setTimeout(() => playTone(659.25, 'triangle', 0.15, 0.15), 100); // E5
+      setTimeout(() => playTone(783.99, 'triangle', 0.25, 0.2), 200); // G5
+    }
+
+    function soundError() {
+      playTone(220, 'sawtooth', 0.15, 0.12);
+      setTimeout(() => playTone(196, 'sawtooth', 0.2, 0.12), 120);
+    }
+
+    function soundClick() {
+      playTone(800, 'sine', 0.05, 0.08);
+    }
+
+    function soundWater() {
+      playTone(400, 'sine', 0.08, 0.1);
+      setTimeout(() => playTone(600, 'sine', 0.08, 0.1), 70);
+      setTimeout(() => playTone(500, 'sine', 0.1, 0.1), 140);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+      document.getElementById('soundText').textContent = soundEnabled ? '音效開' : '音效關';
+      showToast(soundEnabled ? '音效已開啟' : '已切換為靜音模式', '🔊');
+    }
+
+    function showToast(msg, icon = '🔔') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    let currentLevel = 1;
+
+    function switchLevel(lvl) {
+      soundClick();
+      currentLevel = lvl;
+
+      // Hide all levels
+      for (let i = 1; i <= 5; i++) {
+        const sec = document.getElementById(`level-${i}`);
+        if (sec) sec.classList.add('hidden');
+
+        const btn = document.getElementById(`step-btn-${i}`);
+        if (btn) {
+          if (i === lvl) {
+            btn.className = "step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-emerald-600 text-white shadow-sm";
+          } else {
+            btn.className = "step-nav flex-1 py-1.5 px-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5";
+          }
+        }
+      }
+
+      // Show targeted level
+      const targetSec = document.getElementById(`level-${lvl}`);
+      if (targetSec) targetSec.classList.remove('hidden');
+
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetAllProgress() {
+      initAudio();
+      if (!confirm("確定要重置所有五關的冒險進度嗎？")) return;
+      initLevel1();
+      initLevel2();
+      initLevel3();
+      initLevel4();
+      initLevel5();
+      switchLevel(1);
+      showToast("進度已重置，開始新挑戰！", "🔄");
+    }
+
+    const l1Questions = [
+      {
+        icon: "🥤",
+        title: "喝完洗淨的鋁罐可樂",
+        isRecyclable: true,
+        desc: "判斷：它是資源回收還是一般垃圾？",
+        fact: "鋁金屬能無限次熔融再製！回收一個鋁罐省下的電力，足夠讓電視連續看 3 個小時！"
+      },
+      {
+        icon: "🥡",
+        title: "沾滿油污與菜湯的髒衛生紙",
+        isRecyclable: false,
+        desc: "判斷：擦過嘴巴和油污的衛生紙，能丟回收嗎？",
+        fact: "衛生紙纖維短且溶於水，沾染油污病菌後無法造紙，必須丟入「一般垃圾」送焚化處理！"
+      },
+      {
+        icon: "🍂",
+        title: "庭院掃起來的落葉與果皮",
+        isRecyclable: true,
+        desc: "判斷：植物落葉與果皮是資源還是垃圾？",
+        fact: "落葉與生果皮屬於有機資源（堆肥廚餘），能發酵腐熟化為天然優質肥料，滋養大地！"
+      },
+      {
+        icon: "🍼",
+        title: "乾淨喝完的鮮奶塑膠瓶",
+        isRecyclable: true,
+        desc: "判斷：洗乾淨的高密度聚乙烯(HDPE)牛奶瓶？",
+        fact: "塑膠瓶能粉碎再製成工具箱、水桶或塑膠棧板，大幅減少開採石油做塑膠的排碳！"
+      }
+    ];
+
+    let l1CurrentIdx = 0;
+    let l1Score = 0;
+
+    function initLevel1() {
+      l1CurrentIdx = 0;
+      l1Score = 0;
+      renderL1Question();
+      document.getElementById('l1-complete').classList.add('hidden');
+      document.getElementById('l1-card').classList.remove('hidden');
+      document.getElementById('l1-feedback').classList.add('hidden');
+      document.getElementById('l1-progress-text').textContent = `0 / ${l1Questions.length}`;
+    }
+
+    function renderL1Question() {
+      const q = l1Questions[l1CurrentIdx];
+      document.getElementById('l1-icon').textContent = q.icon;
+      document.getElementById('l1-title').textContent = q.title;
+      document.getElementById('l1-desc').textContent = q.desc;
+      document.getElementById('l1-progress-text').textContent = `${l1CurrentIdx} / ${l1Questions.length}`;
+      document.getElementById('l1-feedback').classList.add('hidden');
+    }
+
+    function handleL1Answer(userChoice) {
+      const q = l1Questions[l1CurrentIdx];
+      const isCorrect = (userChoice === q.isRecyclable);
+
+      const fb = document.getElementById('l1-feedback');
+      const fbIcon = document.getElementById('l1-fb-icon');
+      const fbTitle = document.getElementById('l1-fb-title');
+      const fbText = document.getElementById('l1-fb-text');
+
+      fb.classList.remove('hidden');
+
+      if (isCorrect) {
+        soundSuccess();
+        fbIcon.textContent = "🎉";
+        fbTitle.textContent = "回答正確！好棒的環保常識！";
+        fb.className = "mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 transition";
+      } else {
+        soundError();
+        fbIcon.textContent = "💡";
+        fbTitle.textContent = "差一點點！來看看小常識：";
+        fb.className = "mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 transition";
+      }
+
+      fbText.innerHTML = `<strong>【答案】${q.isRecyclable ? '這是資源回收' : '這是一般垃圾'}</strong>。<br>${q.fact}`;
+    }
+
+    function nextL1Question() {
+      soundClick();
+      l1CurrentIdx++;
+      if (l1CurrentIdx < l1Questions.length) {
+        renderL1Question();
+      } else {
+        // Complete
+        document.getElementById('l1-card').classList.add('hidden');
+        document.getElementById('l1-feedback').classList.add('hidden');
+        document.getElementById('l1-complete').classList.remove('hidden');
+        document.getElementById('l1-progress-text').textContent = `${l1Questions.length} / ${l1Questions.length}`;
+        soundSuccess();
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+      }
+    }
+
+    // Items directly matching student's worksheet:
+    // 1. 箱子 -> paper
+    // 2. 玻璃 -> glass
+    // 3. 寶特瓶 -> plastic
+    // 4. 電池 -> battery
+    // 5. 螺絲 -> metal
+    // 6. 手機 -> electronic
+    const l2ItemsData = [
+      { id: 'item-1', name: '箱子 (紙箱)', icon: '📦', category: 'paper', hint: '紙類' },
+      { id: 'item-2', name: '玻璃 (玻璃瓶)', icon: '🍶', category: 'glass', hint: '玻璃' },
+      { id: 'item-3', name: '寶特瓶', icon: '🧴', category: 'plastic', hint: '塑膠' },
+      { id: 'item-4', name: '電池 (乾電池)', icon: '🔋', category: 'battery', hint: '廢電池' },
+      { id: 'item-5', name: '螺絲 (鐵螺絲)', icon: '🔩', category: 'metal', hint: '金屬' },
+      { id: 'item-6', name: '手機 (廢手機)', icon: '📱', category: 'electronic', hint: '電子產品' }
+    ];
+
+    let l2RemainingItems = [];
+    let l2SelectedItemId = null;
+    let l2BinCounts = {
+      paper: 0,
+      plastic: 0,
+      metal: 0,
+      glass: 0,
+      battery: 0,
+      electronic: 0
+    };
+
+    function initLevel2() {
+      l2RemainingItems = [...l2ItemsData];
+      l2SelectedItemId = null;
+      l2BinCounts = { paper: 0, plastic: 0, metal: 0, glass: 0, battery: 0, electronic: 0 };
+      updateBinCountsUI();
+      renderL2Pool();
+      document.getElementById('l2-complete').classList.add('hidden');
+      document.getElementById('l2-count-badge').textContent = `0 / 6`;
+      document.getElementById('l2-selected-tip').classList.add('hidden');
+    }
+
+    function renderL2Pool() {
+      const pool = document.getElementById('l2-items-pool');
+      pool.innerHTML = '';
+
+      if (l2RemainingItems.length === 0) {
+        pool.innerHTML = `<div class="col-span-full py-4 text-center text-xs font-bold text-emerald-600">✨ 所有物品已成功分類完成！</div>`;
+        return;
+      }
+
+      l2RemainingItems.forEach(item => {
+        const div = document.createElement('div');
+        div.id = item.id;
+        div.draggable = true;
+        div.className = `grab-cursor p-3 bg-white border-2 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow transition transform bounce-hover ${l2SelectedItemId === item.id ? 'border-amber-500 ring-2 ring-amber-300' : 'border-slate-200'}`;
+        div.innerHTML = `
+          <span class="text-3xl mb-1">${item.icon}</span>
+          <span class="text-xs font-bold text-slate-700 text-center">${item.name}</span>
+        `;
+
+        // Click to select
+        div.onclick = (e) => {
+          e.stopPropagation();
+          selectL2Item(item.id);
+        };
+
+        // Drag handlers
+        div.ondragstart = (e) => {
+          e.dataTransfer.setData('text/plain', item.id);
+          l2SelectedItemId = item.id;
+        };
+
+        pool.appendChild(div);
+      });
+    }
+
+    function selectL2Item(id) {
+      soundClick();
+      if (l2SelectedItemId === id) {
+        l2SelectedItemId = null;
+        document.getElementById('l2-selected-tip').classList.add('hidden');
+      } else {
+        l2SelectedItemId = id;
+        document.getElementById('l2-selected-tip').classList.remove('hidden');
+      }
+      renderL2Pool();
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function handleDrop(e, targetCategory) {
+      e.preventDefault();
+      const itemId = e.dataTransfer.getData('text/plain') || l2SelectedItemId;
+      commitSorting(itemId, targetCategory);
+    }
+
+    function handleBinClick(targetCategory) {
+      if (!l2SelectedItemId) {
+        showToast("請先點選上方的物品，再點選分類桶！", "👆");
+        return;
+      }
+      commitSorting(l2SelectedItemId, targetCategory);
+    }
+
+    function commitSorting(itemId, targetCategory) {
+      const item = l2RemainingItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      if (item.category === targetCategory) {
+        // Correct
+        soundSuccess();
+        l2BinCounts[targetCategory]++;
+        l2RemainingItems = l2RemainingItems.filter(i => i.id !== itemId);
+        l2SelectedItemId = null;
+        document.getElementById('l2-selected-tip').classList.add('hidden');
+
+        showToast(`太棒了！${item.name} 正確投進【${getCategoryName(targetCategory)}】`, "🎯");
+        updateBinCountsUI();
+        renderL2Pool();
+
+        const finishedCount = 6 - l2RemainingItems.length;
+        document.getElementById('l2-count-badge').textContent = `${finishedCount} / 6`;
+
+        if (l2RemainingItems.length === 0) {
+          setTimeout(() => {
+            document.getElementById('l2-complete').classList.remove('hidden');
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+          }, 400);
+        }
+      } else {
+        // Wrong
+        soundError();
+        showToast(`哎呀！${item.name} 不屬於【${getCategoryName(targetCategory)}】，再試一次吧！`, "❌");
+      }
+    }
+
+    function getCategoryName(cat) {
+      const names = {
+        paper: '紙類',
+        plastic: '塑膠',
+        metal: '金屬',
+        glass: '玻璃',
+        battery: '廢電池',
+        electronic: '電子產品'
+      };
+      return names[cat] || cat;
+    }
+
+    function updateBinCountsUI() {
+      const bins = document.querySelectorAll('.bin-box');
+      bins.forEach(bin => {
+        const cat = bin.getAttribute('data-category');
+        const badge = bin.querySelector('.bin-count');
+        if (badge && cat) {
+          badge.textContent = `已投入: ${l2BinCounts[cat] || 0}`;
+        }
+      });
+    }
+
+    let l3Step = 1;
+    let pouredPearl = false;
+    let pouredIce = false;
+    let washedTimes = 0;
+    let isDried = false;
+
+    function initLevel3() {
+      l3Step = 1;
+      pouredPearl = false;
+      pouredIce = false;
+      washedTimes = 0;
+      isDried = false;
+      document.getElementById('l3-complete').classList.add('hidden');
+      renderL3Step();
+    }
+
+    function renderL3Step() {
+      // Update step badges
+      for (let i = 1; i <= 4; i++) {
+        const badge = document.getElementById(`step-badge-${i}`);
+        if (!badge) continue;
+        if (i < l3Step) {
+          badge.className = "flex flex-col items-center text-emerald-600 font-bold";
+          badge.querySelector('span:first-child').className = "w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mb-1 text-xs";
+          badge.querySelector('span:first-child').textContent = "✓";
+        } else if (i === l3Step) {
+          badge.className = "flex flex-col items-center text-emerald-700 font-black";
+          badge.querySelector('span:first-child').className = "w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-1 text-xs shadow-md animate-bounce";
+          badge.querySelector('span:first-child').textContent = `${i}`;
+        } else {
+          badge.className = "flex flex-col items-center text-slate-400";
+          badge.querySelector('span:first-child').className = "w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mb-1 text-xs";
+          badge.querySelector('span:first-child').textContent = `${i}`;
+        }
+      }
+
+      const container = document.getElementById('boba-step-content');
+
+      if (l3Step === 1) {
+        // Step 1: 倒乾淨
+        container.innerHTML = `
+          <div class="max-w-md mx-auto w-full">
+            <h4 class="text-base font-black text-slate-800 mb-1">步驟一【倒乾淨】：處理杯內的殘留物</h4>
+            <p class="text-xs text-slate-500 mb-4">請點擊以下按鈕，將珍珠與冰塊殘汁分別倒入正確位置：</p>
+            
+            <div class="flex justify-center items-center space-x-6 mb-6">
+              <div class="relative">
+                <div class="text-6xl">🧋</div>
+                <div class="text-xs font-bold text-slate-600 mt-1">內含珍珠與冰塊</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="pourContent('pearl')" id="pour-pearl-btn" class="p-3 rounded-2xl border-2 ${pouredPearl ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-amber-300 hover:bg-amber-50'} text-xs font-bold transition flex items-center justify-center space-x-2">
+                <span>🥣</span>
+                <span>${pouredPearl ? '✅ 珍珠已倒入廚餘桶' : '將珍珠倒進【廚餘桶】'}</span>
+              </button>
+              <button onclick="pourContent('ice')" id="pour-ice-btn" class="p-3 rounded-2xl border-2 ${pouredIce ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-sky-300 hover:bg-sky-50'} text-xs font-bold transition flex items-center justify-center space-x-2">
+                <span>🚰</span>
+                <span>${pouredIce ? '✅ 冰塊殘水已倒入水槽' : '將冰塊溶水倒進【水槽】'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (l3Step === 2) {
+        // Step 2: 洗乾淨
+        container.innerHTML = `
+          <div class="max-w-md mx-auto w-full">
+            <h4 class="text-base font-black text-slate-800 mb-1">步驟二【洗乾淨】：沖洗杯內糖漬奶垢</h4>
+            <p class="text-xs text-slate-500 mb-4">杯壁上還黏著甜甜的奶水，請連續點擊「沖洗」3 次把杯子洗香香！</p>
+            
+            <div class="relative inline-block mb-4">
+              <div class="text-6xl transition duration-300 ${washedTimes > 0 ? 'scale-105' : ''}">${washedTimes >= 3 ? '✨' : '🚿'}</div>
+              <div class="text-xs font-bold text-slate-600 mt-1">清潔度：${washedTimes} / 3 次</div>
+              <div class="w-48 bg-slate-200 h-2 rounded-full mx-auto mt-2 overflow-hidden">
+                <div class="bg-sky-500 h-full transition-all duration-300" style="width: ${(washedTimes/3)*100}%"></div>
+              </div>
+            </div>
+
+            <div>
+              <button onclick="washCup()" class="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-black text-sm rounded-xl shadow-md transition transform active:scale-95">
+                💦 點我開水龍頭沖洗
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (l3Step === 3) {
+        // Step 3: 瀝乾
+        container.innerHTML = `
+          <div class="max-w-md mx-auto w-full">
+            <h4 class="text-base font-black text-slate-800 mb-1">步驟三【瀝乾】：倒扣甩乾杯內水分</h4>
+            <p class="text-xs text-slate-500 mb-4">如果還有大量積水，丟進回收車會弄濕紙類回收物！請倒扣晾乾：</p>
+            
+            <div class="mb-4">
+              <div class="text-6xl transition transform duration-500 ${isDried ? 'rotate-180 scale-95' : 'animate-bounce'}">🥤</div>
+              <div class="text-xs font-bold text-slate-600 mt-2">${isDried ? '已倒扣瀝乾完成！' : '滴滴答答還有水珠...'}</div>
+            </div>
+
+            <div>
+              <button onclick="dryCup()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-sm rounded-xl shadow-md transition">
+                🌪️ 倒扣甩乾水珠
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (l3Step === 4) {
+        // Step 4: 正確分類
+        container.innerHTML = `
+          <div class="max-w-md mx-auto w-full">
+            <h4 class="text-base font-black text-slate-800 mb-1">步驟四【正確分類】：三樣物品各歸其位</h4>
+            <p class="text-xs text-slate-500 mb-4">請分別點選吸管、封口膜與塑膠杯，投進正確的家：</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button onclick="classifyItem('straw')" id="l3-cls-straw" class="p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold transition flex flex-col items-center">
+                <span class="text-2xl mb-1">🥢</span>
+                <span>塑膠吸管</span>
+                <span class="text-[10px] text-rose-600 font-semibold mt-1">丟【一般垃圾】</span>
+              </button>
+              <button onclick="classifyItem('film')" id="l3-cls-film" class="p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold transition flex flex-col items-center">
+                <span class="text-2xl mb-1">🏷️</span>
+                <span>撕下的封口膜</span>
+                <span class="text-[10px] text-rose-600 font-semibold mt-1">丟【一般垃圾】</span>
+              </button>
+              <button onclick="classifyItem('cup')" id="l3-cls-cup" class="p-3 rounded-2xl border-2 border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold transition flex flex-col items-center">
+                <span class="text-2xl mb-1">🥤</span>
+                <span>洗乾淨的杯身</span>
+                <span class="text-[10px] text-emerald-600 font-semibold mt-1">丟【塑膠回收】</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function pourContent(type) {
+      soundClick();
+      if (type === 'pearl') pouredPearl = true;
+      if (type === 'ice') pouredIce = true;
+
+      renderL3Step();
+
+      if (pouredPearl && pouredIce) {
+        soundSuccess();
+        showToast("很好！廚餘跟廢水都倒乾淨了！進入步驟二", "👍");
+        setTimeout(() => {
+          l3Step = 2;
+          renderL3Step();
+        }, 600);
+      }
+    }
+
+    function washCup() {
+      soundWater();
+      washedTimes++;
+      renderL3Step();
+
+      if (washedTimes >= 3) {
+        soundSuccess();
+        showToast("沖洗乾淨囉！沒有黏膩奶味了！", "✨");
+        setTimeout(() => {
+          l3Step = 3;
+          renderL3Step();
+        }, 600);
+      }
+    }
+
+    function dryCup() {
+      soundClick();
+      isDried = true;
+      renderL3Step();
+      soundSuccess();
+      showToast("瀝乾完畢！杯子乾乾淨淨！", "🌤️");
+      setTimeout(() => {
+        l3Step = 4;
+        renderL3Step();
+      }, 700);
+    }
+
+    let classifiedMap = { straw: false, film: false, cup: false };
+    function classifyItem(part) {
+      soundClick();
+      classifiedMap[part] = true;
+      const btn = document.getElementById(`l3-cls-${part}`);
+      if (btn) {
+        btn.classList.add('bg-emerald-50', 'border-emerald-400', 'text-emerald-800');
+        btn.innerHTML = `<span class="text-2xl mb-1">✅</span><span>已正確投入</span>`;
+      }
+
+      if (classifiedMap.straw && classifiedMap.film && classifiedMap.cup) {
+        soundSuccess();
+        setTimeout(() => {
+          document.getElementById('boba-step-content').innerHTML = ``;
+          document.getElementById('l3-complete').classList.remove('hidden');
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+        }, 500);
+      }
+    }
+
+    let craftedItems = { 1: false, 2: false, 3: false };
+    let customIdea = "";
+
+    function initLevel4() {
+      craftedItems = { 1: false, 2: false, 3: false };
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`craft-btn-${i}`);
+        if (btn) {
+          btn.textContent = i === 1 ? '✨ 動手變身盆器' : i === 2 ? '💧 動手變身澆水器' : '🧵 送去抽絲做衣服';
+          btn.className = `mt-4 w-full py-2 ${i === 1 ? 'bg-emerald-100 text-emerald-800' : i === 2 ? 'bg-sky-100 text-sky-800' : 'bg-purple-100 text-purple-800'} text-xs font-bold rounded-xl transition`;
+        }
+      }
+      document.getElementById('l4-complete').classList.add('hidden');
+    }
+
+    function craftItem(index) {
+      soundSuccess();
+      craftedItems[index] = true;
+
+      const btn = document.getElementById(`craft-btn-${index}`);
+      if (btn) {
+        btn.textContent = "✅ 已成功解鎖新用途！";
+        btn.className = "mt-4 w-full py-2 bg-emerald-600 text-white text-xs font-black rounded-xl transition";
+      }
+
+      const names = { 1: "綠意盆栽", 2: "自動噴水器", 3: "環保排汗衫" };
+      showToast(`恭喜解鎖寶特瓶新用途：【${names[index]}】！`, "🎨");
+
+      if (craftedItems[1] && craftedItems[2] && craftedItems[3]) {
+        setTimeout(() => {
+          document.getElementById('l4-complete').classList.remove('hidden');
+          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        }, 500);
+      }
+    }
+
+    function saveCustomDiyIdea() {
+      const input = document.getElementById('diy-custom-input');
+      const val = input.value.trim();
+      if (!val) {
+        showToast("請先輸入你的創意點子唷！", "✏️");
+        return;
+      }
+      soundSuccess();
+      customIdea = val;
+      const tag = document.getElementById('custom-idea-tag');
+      tag.textContent = `🌟 玩家創意已收錄：「${val}」太有才華了！`;
+      tag.classList.remove('hidden');
+      showToast("創意已收錄至冒險日記！", "💡");
+    }
+
+    function initLevel5() {
+      updateCertificate();
+    }
+
+    function updateCertificate() {
+      const nameInput = document.getElementById('advocate-name');
+      const certName = document.getElementById('cert-name');
+      certName.textContent = nameInput.value.trim() || '守護小尖兵';
+
+      // Check actions
+      const checkboxes = document.querySelectorAll('.action-check');
+      const actionsList = document.getElementById('cert-actions-list');
+      actionsList.innerHTML = '';
+
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          const text = cb.nextElementSibling.textContent;
+          const li = document.createElement('li');
+          li.textContent = text;
+          actionsList.appendChild(li);
+        }
+      });
+
+      if (actionsList.children.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = "我願意從日常生活微小行動愛護地球！";
+        actionsList.appendChild(li);
+      }
+
+      // Update date
+      const d = new Date();
+      document.getElementById('cert-date').textContent = `${d.getFullYear()} / ${d.getMonth() + 1} / ${d.getDate()}`;
+    }
+
+    function finalizeAdvocacy() {
+      soundSuccess();
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.5 }
+      });
+      showToast("恭喜榮獲「地球守護者」認證勳章！五關全數破關！", "🏆");
+    }
+
+    function celebrateAgain() {
+      soundSuccess();
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    }
+
+    function shareOrCopy() {
+      const name = document.getElementById('cert-name').textContent;
+      const textToCopy = `【綠色小尖兵行動宣言】\n倡議者：${name}\n核心宣言：我認為大家應該做好資源回收，因為地球只有一個，大家要一起好好愛護。\n倡議標語：好好愛護地球，一起為地球盡一份心力，行動力！🌱`;
+
+      // Copy using textarea fallback for iframe security
+      const textarea = document.createElement('textarea');
+      textarea.value = textToCopy;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        soundSuccess();
+        const tip = document.getElementById('copy-success-tip');
+        tip.classList.remove('hidden');
+        setTimeout(() => tip.classList.add('hidden'), 3000);
+        showToast("宣言內容已成功複製！", "📋");
+      } catch (err) {
+        showToast("複製失敗，請手動選取複製", "⚠️");
+      }
+      document.body.removeChild(textarea);
+    }
+
+    window.onload = function() {
+      initLevel1();
+      initLevel2();
+      initLevel3();
+      initLevel4();
+      initLevel5();
+    };
+  </script>
+</body>
+</html>
